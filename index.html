@@ -16,7 +16,7 @@
     <!-- Secondary Accent Lighter (Light Sage Green): #A9B3A2 -->
     <!-- Neutrals (Existing creams/beiges): #FDFBF8, #F8F4EF, #EAE3D9 -->
     <!-- Text Colors (Existing greys): #4A4A4A, #707070 -->
-    <!-- Application Structure Plan: The application is designed as a single-page dashboard with a tabbed navigation system. This structure was chosen over a linear report format to provide a superior user experience for trip planning. It logically separates different categories of information (Daily Plan, Essentials, Food, Overview) into easily accessible sections. Users can quickly navigate to the information they need without extensive scrolling. The daily itinerary uses a secondary tab system, allowing users to focus on one day at a time, which prevents information overload and aligns with the step-by-step nature of following a travel plan. This interactive, non-linear structure makes the information more digestible and user-friendly. -->
+    <!-- Application Structure Plan: The application is designed as a single-page dashboard with a tabbed navigation system. This structure was chosen over a linear report format to provide a superior user experience for trip planning. It logically separates different categories of information (Daily Plan, Essentials, Food, Overview) into easily accessible sections. Users can quickly navigate to the information they need without extensive scrolling. The daily itinerary uses a secondary tab system, allowing users to focus on one day at a time, which prevents information overload and aligns with the step-by-step nature of following a travel plan. -->
     <!-- Visualization & Content Choices:
         1. Report Info: Distribution of planned activities (sightseeing, food, culture, relaxation). -> Goal: Inform/Summarize. -> Viz/Presentation Method: Donut Chart. -> Interaction: Hover for tooltips showing activity type and percentage. -> Justification: Provides a quick, visual overview of the trip's character and balance. -> Library/Method: Chart.js (Canvas).
         2. Report Info: Multi-day itinerary details. -> Goal: Organize/Inform. -> Viz/Presentation Method: A primary tabbed navigation for main sections and a secondary tabbed interface for daily plans. Each event is a card with an icon. -> Interaction: Click tabs to switch between sections and days. -> Justification: Breaks down a large amount of information into manageable, context-specific chunks, preventing user overwhelm and improving navigability. -> Library/Method: Vanilla JS for tab functionality, HTML/Tailwind for card structure.
@@ -145,10 +145,14 @@
                         </svg>
                         布達佩斯
                     </h1>
+                    <!-- New subtitle for accommodation below the main title -->
+                    <p class="text-sm text-gray-500 text-center w-full -mt-1">
+                        住宿：<a href="#" id="accommodationHeaderLink" class="text-[#B27B6E] hover:text-[#9F6A5D] font-medium transition duration-300">Serenity Luxury Apartment</a>
+                    </p>
+                    <!-- Removed original date and accommodation info from here -->
                     <div class="hidden md:block text-sm text-gray-500 mt-2 md:mt-0 md:text-right">
-                        <p>6月25日 - 6月29日</p>
-                        <p>住宿：<a href="#" id="accommodationHeaderLink" class="text-[#B27B6E] hover:text-[#9F6A5D] font-medium transition duration-300">Serenity Luxury Apartment</a></p>
-                        <!-- Removed check-in/check-out times from header as requested -->
+                        <!-- Date removed as requested -->
+                        <!-- Accommodation link moved as requested -->
                     </div>
                 </div>
             </div>
@@ -161,6 +165,7 @@
                         <button class="nav-button py-3 px-2 text-sm sm:text-base font-medium" data-tab="attractions">景點介紹</button>
                         <button class="nav-button py-3 px-2 text-sm sm:text-base font-medium" data-tab="essentials">旅行必備</button>
                         <button class="nav-button py-3 px-2 text-sm sm:text-base font-medium" data-tab="food">美食地圖</button>
+                        <button class="nav-button py-3 px-2 text-sm sm:text-base font-medium" data-tab="currency-converter">匯率換算</button>
                     </div>
                 </div>
             </nav>
@@ -227,7 +232,7 @@
                         <p class="text-gray-600">安頓好後，在公寓附近享用輕鬆的晚餐。隨後，悠閒地散步至多瑙河畔，初步領略燈火通明的鏈橋與對岸雄偉的布達城堡，感受布達佩斯寧靜而壯麗的夜色，為您的旅程揭開序幕。</p>
                     </div>
                     <div class="text-center mt-6">
-                        <a href="https://www.google.com/maps/search/?api=1&query=Budapest+Airport,+Lázár+utca+Budapest,+Danube+River+Budapest" target="_blank" class="inline-block bg-[#B27B6E] text-white font-bold py-2 px-4 rounded-full hover:bg-[#9F6A5D] transition duration-300">查看地圖</a>
+                        <a href="https://www.google.com/maps/search/?api=1&query=Serenity+Luxury+Apartment+Budapest,Chain+Bridge+Budapest" target="_blank" class="inline-block bg-[#B27B6E] text-white font-bold py-2 px-4 rounded-full hover:bg-[#9F6A5D] transition duration-300">查看地圖</a>
                     </div>
                 </div>
 
@@ -245,12 +250,12 @@
                         <p class="text-xs text-gray-500 mt-2"><strong>訣竅：</strong>煙草會堂在下午時段人潮較少，可獲得更好的參觀體驗。</p>
                     </div>
                     <div class="text-center mt-6">
-                        <a href="https://www.google.com/maps/search/?api=1&query=Rákóczi+Market+Hall,+Great+Market+Hall,+Dohány+Street+Synagogue+Budapest" target="_blank" class="inline-block bg-[#B27B6E] text-white font-bold py-2 px-4 rounded-full hover:bg-[#9F6A5D] transition duration-300">查看地圖</a>
+                        <a href="https://www.google.com/maps/search/?api=1&query=Rákóczi+Market+Hall+Budapest,Great+Market+Hall+Budapest,Dohány+Street+Synagogue+Budapest,St.+Stephen%27s+Basilica+Budapest" target="_blank" class="inline-block bg-[#B27B6E] text-white font-bold py-2 px-4 rounded-full hover:bg-[#9F6A5D] transition duration-300">查看地圖</a>
                     </div>
                 </div>
 
                 <!-- Day 3 Content - Added 'hidden' class -->
-                <div id="day3" class="day-content hidden space-y-6">
+                <div id="day3" class="day-content space-y-6 hidden">
                     <h3 class="text-xl font-bold text-center text-gray-700">6月27日 (星期五): 布達皇城、溫泉與多瑙河之戀</h3>
                     <div class="content-card rounded-lg shadow-sm p-6">
                         <h4 class="font-bold text-lg text-[#B27B6E] mb-2">🏰 上午: 布達城堡山探索</h4>
@@ -267,12 +272,12 @@
                         <p class="text-xs text-gray-500 mt-2"><strong>訣竅：</strong>務必提前預訂船票，尤其是在週五晚上。</p>
                     </div>
                     <div class="text-center mt-6">
-                        <a href="https://www.google.com/maps/search/?api=1&query=Matthias+Church,+Fisherman%27s+Bastion,+Buda+Castle,+St.+Stephen%27s+Basilica,+Danube+River+cruise+Budapest" target="_blank" class="inline-block bg-[#B27B6E] text-white font-bold py-2 px-4 rounded-full hover:bg-[#9F6A5D] transition duration-300">查看地圖</a>
+                        <a href="https://www.google.com/maps/search/?api=1&query=Matthias+Church+Budapest,Fisherman%27s+Bastion+Budapest,Buda+Castle+Budapest,Széchenyi+Thermal+Bath+Budapest,Danube+River+cruise+Budapest" target="_blank" class="inline-block bg-[#B27B6E] text-white font-bold py-2 px-4 rounded-full hover:bg-[#9F6A5D] transition duration-300">查看地圖</a>
                     </div>
                 </div>
 
                 <!-- Day 4 Content - Added 'hidden' class -->
-                <div id="day4" class="day-content hidden space-y-6">
+                <div id="day4" class="day-content space-y-6 hidden">
                     <h3 class="text-xl font-bold text-center text-gray-700">6月28日 (星期六): 佩斯風華與文學魅力</h3>
                     <div class="content-card rounded-lg shadow-sm p-6">
                         <h4 class="font-bold text-lg text-[#B27B6E] mb-2">☕ 上午: 尋訪「最美的」景點</h4>
@@ -288,12 +293,12 @@
                         <p class="text-gray-600">前往位於紐加提火車站 (Nyugati Railway Station) 的「最美麥當勞」作為晚餐或宵夜。這家麥當勞開在由艾菲爾鐵塔設計團隊建造的歷史建築內，用餐環境極具特色，為一天的行程畫上奇趣的句點。</p>
                     </div>
                     <div class="text-center mt-6">
-                        <a href="https://www.google.com/maps/search/?api=1&query=New+York+Café+Budapest,+Metropolitan+Ervin+Szabó+Library,+Hungarian+State+Opera,+Széchenyi+Thermal+Bath,+McDonald%27s+Nyugati+Railway+Station" target="_blank" class="inline-block bg-[#B27B6E] text-white font-bold py-2 px-4 rounded-full hover:bg-[#9F6A5D] transition duration-300">查看地圖</a>
+                        <a href="https://www.google.com/maps/search/?api=1&query=New+York+Café+Budapest,Metropolitan+Ervin+Szabó+Library+Budapest,Hungarian+State+Opera+Budapest,McDonald%27s+Nyugati+Railway+Station+Budapest" target="_blank" class="inline-block bg-[#B27B6E] text-white font-bold py-2 px-4 rounded-full hover:bg-[#9F6A5D] transition duration-300">查看地圖</a>
                     </div>
                 </div>
 
                 <!-- Day 5 Content - Moved from Day 1 -->
-                <div id="day5" class="day-content hidden space-y-6">
+                <div id="day5" class="day-content space-y-6 hidden">
                     <h3 class="text-xl font-bold text-center text-gray-700">6月29日 (星期日): 輕鬆告別</h3>
                     <div class="content-card rounded-lg shadow-sm p-6">
                         <h4 class="font-bold text-lg text-[#B27B6E] mb-2">🚆 上午: 從Serenity Luxury Apartment出發前往布拉格</h4>
@@ -501,7 +506,7 @@
                                     <button class="play-pronunciation-btn bg-[#8C998B] text-white text-sm font-medium py-1 px-3 rounded-full hover:bg-[#9F6A5D] transition duration-300" data-phrase="Mennyibe kerül?" data-lang="hu-HU">播放發音</button>
                                 </li>
                                 <li class="flex items-center justify-between">
-                                    <span class="text-gray-700"><strong>再見 (Goodbye):</strong> Viszlát</span>
+                                    <span class="text-gray-700"><strong>再見 (Goodbye):</b> Viszlát</span>
                                     <button class="play-pronunciation-btn bg-[#8C998B] text-white text-sm font-medium py-1 px-3 rounded-full hover:bg-[#9F6A5D] transition duration-300" data-phrase="Viszlát" data-lang="hu-HU">播放發音</button>
                                 </li>
                             </ul>
@@ -578,6 +583,29 @@
                     </div>
                 </div>
             </div>
+
+            <!-- Currency Converter Tab -->
+            <div id="currency-converter" class="tab-content hidden">
+                <div class="bg-white p-6 rounded-lg shadow-md">
+                    <h2 class="text-2xl font-bold text-[#4A4A4A] mb-4 text-center">匯率換算：匈牙利福林 (HUF) 到新台幣 (NTD)</h2>
+                    <div class="flex flex-col items-center space-y-4">
+                        <div class="w-full max-w-sm">
+                            <label for="hufInput" class="block text-gray-700 text-sm font-bold mb-2">
+                                匈牙利福林 (HUF)
+                            </label>
+                            <input type="number" id="hufInput" class="shadow appearance-none border rounded-lg w-full py-3 px-4 text-gray-700 leading-tight focus:outline-none focus:shadow-outline focus:ring-2 focus:ring-[#B27B6E]" placeholder="輸入福林金額" min="0">
+                        </div>
+                        <div class="text-2xl font-bold text-[#B27B6E]">=</div>
+                        <div class="w-full max-w-sm">
+                            <label for="ntdOutput" class="block text-gray-700 text-sm font-bold mb-2">
+                                新台幣 (NTD)
+                            </label>
+                            <input type="text" id="ntdOutput" class="shadow appearance-none border rounded-lg w-full py-3 px-4 text-gray-700 bg-gray-100 leading-tight focus:outline-none focus:shadow-outline" placeholder="新台幣金額" readonly>
+                        </div>
+                        <p class="text-xs text-gray-500 mt-4">當前匯率約為 1 HUF = 0.09 NTD (此為參考匯率，實際匯率請以銀行或換匯處為準)。</p>
+                    </div>
+                </div>
+            </div>
         </main>
     </div>
 
@@ -617,6 +645,11 @@
             const accommodationModal = document.getElementById('accommodationModal');
             const closeModalBtn = document.getElementById('closeModalBtn');
 
+            // Currency Converter elements
+            const hufInput = document.getElementById('hufInput');
+            const ntdOutput = document.getElementById('ntdOutput');
+            const HUF_TO_NTD_RATE = 0.09; // Approximate exchange rate: 1 HUF = 0.09 NTD
+
             function showTab(tabId, buttons, contents) {
                 buttons.forEach(button => {
                     button.classList.remove('active');
@@ -630,6 +663,13 @@
 
                 if(activeButton) activeButton.classList.add('active');
                 if(activeContent) activeContent.classList.remove('hidden');
+
+                // If currency converter tab is activated, clear inputs and focus
+                if (tabId === 'currency-converter') {
+                    hufInput.value = '';
+                    ntdOutput.value = '';
+                    hufInput.focus();
+                }
             }
 
             // Initially show the overview tab
@@ -852,6 +892,17 @@
             accommodationModal.addEventListener('click', function(event) {
                 if (event.target === accommodationModal) {
                     hideModal();
+                }
+            });
+
+            // Currency Converter Logic
+            hufInput.addEventListener('input', () => {
+                const hufValue = parseFloat(hufInput.value);
+                if (!isNaN(hufValue)) {
+                    const ntdValue = (hufValue * HUF_TO_NTD_RATE).toFixed(2); // Keep 2 decimal places
+                    ntdOutput.value = ntdValue;
+                } else {
+                    ntdOutput.value = ''; // Clear if input is not a number
                 }
             });
         });
