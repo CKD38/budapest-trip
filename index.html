@@ -9,9 +9,15 @@
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;500;700&display=swap" rel="stylesheet">
-    <!-- Chosen Palette: Warm Neutrals -->
+    <!-- Chosen Palette: Morandi inspired by Hungarian flag -->
+    <!-- Primary Accent (Terracotta/Red): #B27B6E -->
+    <!-- Primary Accent Hover (Darker Terracotta): #9F6A5D -->
+    <!-- Secondary Accent (Sage Green): #8C998B -->
+    <!-- Secondary Accent Lighter (Light Sage Green): #A9B3A2 -->
+    <!-- Neutrals (Existing creams/beiges): #FDFBF8, #F8F4EF, #EAE3D9 -->
+    <!-- Text Colors (Existing greys): #4A4A4A, #707070 -->
     <!-- Application Structure Plan: The application is designed as a single-page dashboard with a tabbed navigation system. This structure was chosen over a linear report format to provide a superior user experience for trip planning. It logically separates different categories of information (Daily Plan, Essentials, Food, Overview) into easily accessible sections. Users can quickly navigate to the information they need without extensive scrolling. The daily itinerary uses a secondary tab system, allowing users to focus on one day at a time, which prevents information overload and aligns with the step-by-step nature of following a travel plan. This interactive, non-linear structure makes the information more digestible and user-friendly. -->
-    <!-- Visualization & Content Choices: 
+    <!-- Visualization & Content Choices:
         1. Report Info: Distribution of planned activities (sightseeing, food, culture, relaxation). -> Goal: Inform/Summarize. -> Viz/Presentation Method: Donut Chart. -> Interaction: Hover for tooltips showing activity type and percentage. -> Justification: Provides a quick, visual overview of the trip's character and balance. -> Library/Method: Chart.js (Canvas).
         2. Report Info: Multi-day itinerary details. -> Goal: Organize/Inform. -> Viz/Presentation Method: A primary tabbed navigation for main sections and a secondary tabbed interface for daily plans. Each event is a card with an icon. -> Interaction: Click tabs to switch between sections and days. -> Justification: Breaks down a large amount of information into manageable, context-specific chunks, preventing user overwhelm and improving navigability. -> Library/Method: Vanilla JS for tab functionality, HTML/Tailwind for card structure.
         3. Report Info: Practical travel advice (transport, currency, tips). -> Goal: Inform/Organize. -> Viz/Presentation Method: A dedicated "Trip Essentials" section with collapsible accordion-style panels. -> Interaction: Click headers to expand/collapse detailed information. -> Justification: Keeps the UI clean by hiding dense text by default, while making crucial information readily available on demand. -> Library/Method: Vanilla JS for accordion functionality.
@@ -29,14 +35,14 @@
             border-bottom: 2px solid transparent;
         }
         .nav-button.active {
-            color: #C1A57B;
-            border-bottom-color: #C1A57B;
+            color: #B27B6E; /* Primary Accent */
+            border-bottom-color: #B27B6E; /* Primary Accent */
         }
         .nav-button:hover {
-            color: #A4895D;
+            color: #9F6A5D; /* Primary Accent Hover */
         }
         .day-tab.active {
-            background-color: #C1A57B;
+            background-color: #B27B6E; /* Primary Accent */
             color: #FFFFFF;
         }
         .day-tab:not(.active) {
@@ -48,7 +54,7 @@
         }
         .content-card {
             background-color: #FFFFFF;
-            border-left: 4px solid #D6C6AC;
+            border-left: 4px solid #A9B3A2; /* Secondary Accent Lighter */
             transition: transform 0.2s ease-in-out, box-shadow 0.2s ease-in-out;
         }
         .content-card:hover {
@@ -60,19 +66,66 @@
             overflow: hidden;
             transition: max-height 0.5s ease-out;
         }
-        .chart-container { 
-            position: relative; 
-            width: 100%; 
-            max-width: 400px; 
-            margin-left: auto; 
-            margin-right: auto; 
+        .chart-container {
+            position: relative;
+            width: 100%;
+            max-width: 400px;
+            margin-left: auto;
+            margin-right: auto;
             height: 300px;
             max-height: 400px;
         }
-        @media (min-width: 768px) { 
-            .chart-container { 
-                height: 350px; 
-            } 
+        @media (min-width: 768px) {
+            .chart-container {
+                height: 350px;
+            }
+        }
+        /* Modal styles */
+        .modal {
+            position: fixed;
+            z-index: 1000;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0,0,0,0.6);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            opacity: 0;
+            visibility: hidden;
+            transition: opacity 0.3s ease, visibility 0.3s ease;
+        }
+        .modal.show {
+            opacity: 1;
+            visibility: visible;
+        }
+        .modal-content {
+            background-color: #fff;
+            padding: 2.5rem;
+            border-radius: 0.75rem;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.2);
+            max-width: 90%;
+            width: 500px;
+            transform: translateY(-20px);
+            transition: transform 0.3s ease;
+            position: relative;
+            font-size: 0.95rem; /* Slightly smaller font for details */
+        }
+        .modal.show .modal-content {
+            transform: translateY(0);
+        }
+        .close-button {
+            position: absolute;
+            top: 1rem;
+            right: 1.5rem;
+            font-size: 2rem;
+            cursor: pointer;
+            color: #707070;
+            transition: color 0.2s ease;
+        }
+        .close-button:hover {
+            color: #4A4A4A;
         }
     </style>
 </head>
@@ -82,11 +135,20 @@
         <!-- Header -->
         <header class="bg-white shadow-sm sticky top-0 z-50">
             <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
-                <div class="flex items-center justify-between">
-                    <h1 class="text-2xl md:text-3xl font-bold text-[#C1A57B]">您的互動式布達佩斯旅程</h1>
-                    <div class="hidden md:block text-sm text-gray-500">
+                <div class="flex flex-col md:flex-row items-center justify-between">
+                    <!-- Hungarian Flag SVG -->
+                    <h1 class="text-2xl md:text-3xl font-bold text-[#B27B6E] text-center w-full">
+                        <svg class="inline-block h-6 w-6 sm:h-8 sm:w-8 mr-2 -mt-1" viewBox="0 0 9 6" xmlns="http://www.w3.org/2000/svg">
+                            <rect width="9" height="2" fill="#e05206"/>
+                            <rect y="2" width="9" height="2" fill="#478d50"/>
+                            <rect y="4" width="9" height="2" fill="#ffffff"/>
+                        </svg>
+                        布達佩斯
+                    </h1>
+                    <div class="hidden md:block text-sm text-gray-500 mt-2 md:mt-0 md:text-right">
                         <p>6月25日 - 6月29日</p>
-                        <p>住宿：國家歌劇院附近</p>
+                        <p>住宿：<a href="#" id="accommodationHeaderLink" class="text-[#B27B6E] hover:text-[#9F6A5D] font-medium transition duration-300">Serenity Luxury Apartment</a></p>
+                        <!-- Removed check-in/check-out times from header as requested -->
                     </div>
                 </div>
             </div>
@@ -109,24 +171,35 @@
             <!-- Overview Tab -->
             <div id="overview" class="tab-content">
                 <div class="bg-white p-6 rounded-lg shadow-md">
-                    <h2 class="text-2xl font-bold text-[#4A4A4A] mb-4">歡迎來到布達佩斯！</h2>
+                    <h2 class="text-2xl font-bold text-[#4A4A4A] mb-4">布達佩斯：多瑙河上的璀璨明珠</h2>
                     <p class="text-gray-600 mb-6">
-                        這份行程專為您量身打造，旨在提供一場高效、悠閒且深入的布達佩斯之旅。我們將根據您的偏好，避開人潮，探索這座「東歐巴黎」的經典與秘境。行程圍繞您在國家歌劇院附近的住宿進行優化，減少不必要的奔波，讓您能以最輕鬆的步調，沉浸在多瑙河畔的歷史、藝術與美食之中。
+                        布達佩斯，一座充滿故事與魅力的城市，由多瑙河將古老的「布達」與充滿活力的「佩斯」緊密相連。這裡曾是羅馬帝國的邊疆，見證了馬扎爾民族的崛起，也經歷了鄂圖曼帝國的統治和奧匈帝國的輝煌。漫步在這座城市，您會感受到歷史的厚重與現代的脈動交織。
                     </p>
-                    <div class="grid md:grid-cols-2 gap-8 items-center">
-                        <div>
-                            <h3 class="text-xl font-semibold text-[#4A4A4A] mb-3">旅程活動一覽</h3>
-                            <p class="text-gray-600 mb-4">此圖表為您展示了本次旅程中各類活動的佔比，幫助您快速了解行程的整體風格。您可以看到我們在歷史探索、美食體驗與休閒放鬆之間取得了完美的平衡。</p>
-                            <ul class="text-sm text-gray-500 space-y-1">
-                                <li>🏛️ **歷史文化**: 深入探索城堡山、猶太區等世界遺產。</li>
-                                <li>🍽️ **美食市場**: 品嚐地道匈牙利菜，體驗當地市場活力。</li>
-                                <li>✨ **特色景點**: 探訪「最美的」咖啡館、圖書館與麥當勞。</li>
-                                <li>🛶 **休閒放鬆**: 享受多瑙河遊船與賽切尼溫泉的愜意時光。</li>
-                            </ul>
+                    <p class="text-gray-600 mb-6">
+                        從雄偉的國會大廈到莊嚴的布達城堡，從熱鬧的中央市場到令人放鬆的溫泉浴場，布達佩斯擁有豐富的文化遺產和獨特的城市風情。這裡的每一磚一瓦、每一條鵝卵石街道，都訴說著千年來的變遷與傳奇。同時，它也以其充滿活力的藝術氛圍、美味的匈牙利料理和熱情友善的人民吸引著世界各地的旅人。
+                    </p>
+                    <p class="text-gray-600 mb-6">
+                        準備好沉浸在布達佩斯之魔力中了嗎？讓我們一同探索這座城市的美麗、歷史與活力！
+                    </p>
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mt-8">
+                        <div class="rounded-lg overflow-hidden shadow-lg">
+                            <img src="https://image.cdn-eztravel.com.tw/uo1--4OTbcLhjaMbwQ03Kk245hUsgVV7eZxZHXQFANw/g:ce/aHR0cHM6Ly92YWNhdGlvbi5jZG4tZXp0cmF2ZWwuY29tLnR3L2ltZy9WRFIvYnVkYXBlc3QuanBn.jpg" alt="宏偉的匈牙利國會大廈" class="w-full h-auto object-cover rounded-md" onerror="this.onerror=null;this.src='https://placehold.co/600x400/D6C6AC/4A4A4A?text=圖片載入失敗';">
+                            <p class="text-sm text-gray-500 text-center mt-2">宏偉的匈牙利國會大廈</p>
                         </div>
-                        <div class="chart-container">
-                            <canvas id="activityChart"></canvas>
+                        <div class="rounded-lg overflow-hidden shadow-lg">
+                            <img src="https://image.kkday.com/v2/image/get/h_650%2Cc_fit%2Cq_55%2Ct_webp/s1.kkday.com/product_8977/20160624023336_kpx4f/jpg" alt="布達城堡與多瑙河" class="w-full h-auto object-cover rounded-md" onerror="this.onerror=null;this.src='https://placehold.co/600x400/A4895D/FFFFFF?text=圖片載入失敗';">
+                            <p class="text-sm text-gray-500 text-center mt-2">布達城堡俯瞰多瑙河</p>
                         </div>
+                        <div class="rounded-lg overflow-hidden shadow-lg md:col-span-2">
+                            <img src="https://photos.smugmug.com/photos/i-Mc4gZF4/1/6cfb5ff8/XL/i-Mc4gZF4-XL.jpg" alt="布達佩斯夜景鏈橋" class="w-full h-auto object-cover rounded-md" onerror="this.onerror=null;this.src='https://placehold.co/900x400/C1A57B/FFFFFF?text=圖片載入失敗';">
+                            <p class="text-sm text-gray-500 text-center mt-2">夜晚燈火輝煌的鏈橋</p>
+                        </div>
+                    </div>
+
+                    <!-- Activity Distribution Chart -->
+                    <h3 class="text-xl font-bold text-[#4A4A4A] mt-8 mb-4 text-center">行程活動佔比</h3>
+                    <div class="chart-container">
+                        <canvas id="activityChart"></canvas>
                     </div>
                 </div>
             </div>
@@ -146,15 +219,15 @@
                 <div id="day1" class="day-content space-y-6">
                     <h3 class="text-xl font-bold text-center text-gray-700">6月25日 (星期三): 抵達與佩斯初體驗</h3>
                     <div class="content-card rounded-lg shadow-sm p-6">
-                        <h4 class="font-bold text-lg text-[#C1A57B] mb-2">🛬 下午: 機場接駁 & 飯店入住</h4>
-                        <p class="text-gray-600">下午2:20抵達機場，預計下午4:00左右抵達位於國家歌劇院附近的飯店。建議搭乘Bolt叫車或預約機場接駁，以獲得最舒適便捷的抵達體驗，為旅程儲備體力。</p>
+                        <h4 class="font-bold text-lg text-[#B27B6E] mb-2">🛬 下午: 機場接駁 & 飯店入住 (<a href="#" id="accommodationDay1Link" class="text-[#B27B6E] hover:text-[#9F6A5D] font-medium transition duration-300">Serenity Luxury Apartment</a>)</h4>
+                        <p class="text-gray-600">下午2:20抵達機場，預計下午4:00左右抵達位於Lázár utca的Serenity Luxury Apartment。建議搭乘Bolt叫車或預約機場接駁，以獲得最舒適便捷的抵達體驗，為旅程儲備體力。自助入住方式：密碼鑰匙盒，請聯絡房東。</p>
                     </div>
                     <div class="content-card rounded-lg shadow-sm p-6">
-                        <h4 class="font-bold text-lg text-[#C1A57B] mb-2">🌙 傍晚/夜晚: 安頓與多瑙河畔漫步</h4>
-                        <p class="text-gray-600">安頓好後，在飯店附近享用輕鬆的晚餐。隨後，悠閒地散步至多瑙河畔，初步領略燈火通明的鏈橋與對岸雄偉的布達城堡，感受布達佩斯寧靜而壯麗的夜色，為您的旅程揭開序幕。</p>
+                        <h4 class="font-bold text-lg text-[#B27B6E] mb-2">🌙 傍晚/夜晚: 安頓與多瑙河畔漫步</h4>
+                        <p class="text-gray-600">安頓好後，在公寓附近享用輕鬆的晚餐。隨後，悠閒地散步至多瑙河畔，初步領略燈火通明的鏈橋與對岸雄偉的布達城堡，感受布達佩斯寧靜而壯麗的夜色，為您的旅程揭開序幕。</p>
                     </div>
                     <div class="text-center mt-6">
-                        <a href="https://www.google.com/maps/search/?api=1&query=Budapest+Airport,+Hungarian+State+Opera,+Danube+River+Budapest" target="_blank" class="inline-block bg-[#C1A57B] text-white font-bold py-2 px-4 rounded-full hover:bg-[#A4895D] transition duration-300">查看地圖</a>
+                        <a href="https://www.google.com/maps/search/?api=1&query=Budapest+Airport,+Lázár+utca+Budapest,+Danube+River+Budapest" target="_blank" class="inline-block bg-[#B27B6E] text-white font-bold py-2 px-4 rounded-full hover:bg-[#9F6A5D] transition duration-300">查看地圖</a>
                     </div>
                 </div>
 
@@ -162,39 +235,39 @@
                 <div id="day2" class="day-content hidden space-y-6">
                      <h3 class="text-xl font-bold text-center text-gray-700">6月26日 (星期四): 市場風情與猶太區探索</h3>
                     <div class="content-card rounded-lg shadow-sm p-6">
-                        <h4 class="font-bold text-lg text-[#C1A57B] mb-2">🛍️ 上午 (清晨): 市場巡禮</h4>
+                        <h4 class="font-bold text-lg text-[#B27B6E] mb-2">🛍️ 上午 (清晨): 市場巡禮</h4>
                         <p class="text-gray-600 mb-3"><strong>第一站：拉科齊市場大廳 (Rákóczi Market Hall)</strong><br>從這個更具地方色彩的市場開始，體驗最道地的匈牙利日常生活。建議上午8-9點抵達，感受市場甦醒時的活力，又可避開第一波購物人潮。</p>
                         <p class="text-gray-600"><strong>第二站：中央市場大廳 (Great Market Hall)</strong><br>接著前往布達佩斯最大、最著名的室內市場。建議上午10點後抵達，此時當地人購物高峰已過，您可以更悠閒地探索琳瑯滿目的商品，並在樓上品嚐蘭戈斯 (Langos) 等地道小吃作為午餐。</p>
                     </div>
                      <div class="content-card rounded-lg shadow-sm p-6">
-                        <h4 class="font-bold text-lg text-[#C1A57B] mb-2">🕍 下午: 猶太區深度遊</h4>
+                        <h4 class="font-bold text-lg text-[#B27B6E] mb-2">🕍 下午: 猶太區深度遊</h4>
                         <p class="text-gray-600">參觀歐洲最大的猶太教堂——**多哈尼街煙草會堂** (Dohány Street Synagogue)。建議參加導覽，深入了解其背後的歷史故事。之後，漫步於充滿活力的猶太區，感受其獨特的歷史氛圍、特色小店與廢墟酒吧文化。晚餐可在此區選擇一家餐廳，品嚐正宗的匈牙利燉牛肉。</p>
                         <p class="text-xs text-gray-500 mt-2"><strong>訣竅：</strong>煙草會堂在下午時段人潮較少，可獲得更好的參觀體驗。</p>
                     </div>
                     <div class="text-center mt-6">
-                        <a href="https://www.google.com/maps/search/?api=1&query=Rákóczi+Market+Hall,+Great+Market+Hall,+Dohány+Street+Synagogue+Budapest" target="_blank" class="inline-block bg-[#C1A57B] text-white font-bold py-2 px-4 rounded-full hover:bg-[#A4895D] transition duration-300">查看地圖</a>
+                        <a href="https://www.google.com/maps/search/?api=1&query=Rákóczi+Market+Hall,+Great+Market+Hall,+Dohány+Street+Synagogue+Budapest" target="_blank" class="inline-block bg-[#B27B6E] text-white font-bold py-2 px-4 rounded-full hover:bg-[#9F6A5D] transition duration-300">查看地圖</a>
                     </div>
                 </div>
-                
+
                 <!-- Day 3 Content - Added 'hidden' class -->
                 <div id="day3" class="day-content hidden space-y-6">
                     <h3 class="text-xl font-bold text-center text-gray-700">6月27日 (星期五): 布達皇城、溫泉與多瑙河之戀</h3>
                     <div class="content-card rounded-lg shadow-sm p-6">
-                        <h4 class="font-bold text-lg text-[#C1A57B] mb-2">🏰 上午: 布達城堡山探索</h4>
+                        <h4 class="font-bold text-lg text-[#B27B6E] mb-2">🏰 上午: 布達城堡山探索</h4>
                         <p class="text-gray-600">提早出發，搭乘纜車登上城堡山，避開人潮。依序參觀**馬提亞斯教堂**的華麗內飾與彩色屋頂，接著到**漁夫堡**，這裡是拍攝國會大廈全景的最佳地點。最後，在外圍欣賞宏偉的**布達皇宮**，感受昔日帝國的輝煌。</p>
                     </div>
                     <div class="content-card rounded-lg shadow-sm p-6">
-                        <h4 class="font-bold text-lg text-[#C1A57B] mb-2">🛁 下午: 賽切尼溫泉 (Széchenyi Thermal Bath)</h4>
+                        <h4 class="font-bold text-lg text-[#B27B6E] mb-2">🛁 下午: 賽切尼溫泉 (Széchenyi Thermal Bath)</h4>
                         <p class="text-gray-600">前往歐洲最大的溫泉浴場之一，體驗布達佩斯獨特的溫泉文化。您可以在巨大的戶外溫泉池中放鬆身心，洗去旅途的疲憊。</p>
                         <p class="text-xs text-gray-500 mt-2"><strong>訣竅：</strong>建議下午5:30後入場，此時人潮開始散去，您可以享受更寧靜的氛圍，並體驗從白天到夜晚的溫泉景色。</p>
                     </div>
                     <div class="content-card rounded-lg shadow-sm p-6">
-                        <h4 class="font-bold text-lg text-[#C1A57B] mb-2">🛶 傍晚: 日落黃昏遊船</h4>
+                        <h4 class="font-bold text-lg text-[#B27B6E] mb-2">🛶 傍晚: 日落黃昏遊船</h4>
                         <p class="text-gray-600">這是您此行的亮點！6月27日的日落時間約為晚上8:45。建議預訂**晚上8:15至8:20出發的遊船**，這樣可以完整捕捉從日落餘暉到華燈初上的魔幻時刻。看著國會大廈與兩岸建築在夜色中被點亮，倒映在多瑙河上，將是畢生難忘的畫面。</p>
                         <p class="text-xs text-gray-500 mt-2"><strong>訣竅：</strong>務必提前預訂船票，尤其是在週五晚上。</p>
                     </div>
                     <div class="text-center mt-6">
-                        <a href="https://www.google.com/maps/search/?api=1&query=Matthias+Church,+Fisherman%27s+Bastion,+Buda+Castle,+St.+Stephen%27s+Basilica,+Danube+River+cruise+Budapest" target="_blank" class="inline-block bg-[#C1A57B] text-white font-bold py-2 px-4 rounded-full hover:bg-[#A4895D] transition duration-300">查看地圖</a>
+                        <a href="https://www.google.com/maps/search/?api=1&query=Matthias+Church,+Fisherman%27s+Bastion,+Buda+Castle,+St.+Stephen%27s+Basilica,+Danube+River+cruise+Budapest" target="_blank" class="inline-block bg-[#B27B6E] text-white font-bold py-2 px-4 rounded-full hover:bg-[#9F6A5D] transition duration-300">查看地圖</a>
                     </div>
                 </div>
 
@@ -202,32 +275,32 @@
                 <div id="day4" class="day-content hidden space-y-6">
                     <h3 class="text-xl font-bold text-center text-gray-700">6月28日 (星期六): 佩斯風華與文學魅力</h3>
                     <div class="content-card rounded-lg shadow-sm p-6">
-                        <h4 class="font-bold text-lg text-[#C1A57B] mb-2">☕ 上午: 尋訪「最美的」景點</h4>
+                        <h4 class="font-bold text-lg text-[#B27B6E] mb-2">☕ 上午: 尋訪「最美的」景點</h4>
                          <p class="text-gray-600 mb-3"><strong>第一站: 紐約咖啡館 (New York Café)</strong><br>務必在早上8點開門時抵達，以避開長長的隊伍，進入這座被譽為「世界最美咖啡館」的宮殿，享用一頓華麗的早餐或咖啡。</p>
                         <p class="text-gray-600"><strong>第二站: 薩博·埃爾文中央圖書館 (Metropolitan Ervin Szabó Library)</strong><br>探訪這座隱藏在現代圖書館內的「最美圖書館」，其四樓的巴洛克風格閱覽室絕對會讓您嘆為觀止。</p>
                     </div>
                      <div class="content-card rounded-lg shadow-sm p-6">
-                        <h4 class="font-bold text-lg text-[#C1A57B] mb-2">🏛️ 下午: 安德拉什大街漫步與國家歌劇院</h4>
+                        <h4 class="font-bold text-lg text-[#B27B6E] mb-2">🏛️ 下午: 安德拉什大街漫步與國家歌劇院</h4>
                         <p class="text-gray-600">在被列為世界遺產的安德拉什大街上悠閒漫步，欣賞兩旁的新文藝復興建築，逛逛精品店。您可以參加**國家歌劇院**的導覽，深入了解這座建築瑰寶。</p>
                     </div>
                      <div class="content-card rounded-lg shadow-sm p-6">
-                        <h4 class="font-bold text-lg text-[#C1A57B] mb-2">🍔 晚餐: 最美的麥當勞</h4>
+                        <h4 class="font-bold text-lg text-[#B27B6E] mb-2">🍔 晚餐: 最美的麥當勞</h4>
                         <p class="text-gray-600">前往位於紐加提火車站 (Nyugati Railway Station) 的「最美麥當勞」作為晚餐或宵夜。這家麥當勞開在由艾菲爾鐵塔設計團隊建造的歷史建築內，用餐環境極具特色，為一天的行程畫上奇趣的句點。</p>
                     </div>
                     <div class="text-center mt-6">
-                        <a href="https://www.google.com/maps/search/?api=1&query=New+York+Café+Budapest,+Metropolitan+Ervin+Szabó+Library,+Hungarian+State+Opera,+Széchenyi+Thermal+Bath,+McDonald%27s+Nyugati+Railway+Station" target="_blank" class="inline-block bg-[#C1A57B] text-white font-bold py-2 px-4 rounded-full hover:bg-[#A4895D] transition duration-300">查看地圖</a>
+                        <a href="https://www.google.com/maps/search/?api=1&query=New+York+Café+Budapest,+Metropolitan+Ervin+Szabó+Library,+Hungarian+State+Opera,+Széchenyi+Thermal+Bath,+McDonald%27s+Nyugati+Railway+Station" target="_blank" class="inline-block bg-[#B27B6E] text-white font-bold py-2 px-4 rounded-full hover:bg-[#9F6A5D] transition duration-300">查看地圖</a>
                     </div>
                 </div>
 
-                <!-- Day 5 Content - Added 'hidden' class -->
+                <!-- Day 5 Content - Moved from Day 1 -->
                 <div id="day5" class="day-content hidden space-y-6">
                     <h3 class="text-xl font-bold text-center text-gray-700">6月29日 (星期日): 輕鬆告別</h3>
                     <div class="content-card rounded-lg shadow-sm p-6">
-                        <h4 class="font-bold text-lg text-[#C1A57B] mb-2">🚆 上午: 前往布拉格</h4>
-                        <p class="text-gray-600">早上在飯店附近享用最後一頓早餐。您的火車將於上午7:45從**德利火車站 (Déli Railway Station)** 出發。考慮到是清晨且需攜帶行李，強烈建議預訂計程車或使用Bolt叫車服務，確保最遲在上午7:15前抵達車站，輕鬆無壓力地開啟下一段旅程。</p>
+                        <h4 class="font-bold text-lg text-[#B27B6E] mb-2">🚆 上午: 從Serenity Luxury Apartment出發前往布拉格</h4>
+                        <p class="text-gray-600">早上在公寓附近享用最後一頓早餐。您的火車將於上午7:45從**德利火車站 (Déli Railway Station)** 出發。考慮到是清晨且需攜帶行李，強烈建議預訂計程車或使用Bolt叫車服務，確保最遲在上午7:15前抵達車站，輕鬆無壓力地開啟下一段旅程。</p>
                     </div>
                     <div class="text-center mt-6">
-                        <a href="https://www.google.com/maps/search/?api=1&query=Déli+Railway+Station+Budapest" target="_blank" class="inline-block bg-[#C1A57B] text-white font-bold py-2 px-4 rounded-full hover:bg-[#A4895D] transition duration-300">查看地圖</a>
+                        <a href="https://www.google.com/maps/search/?api=1&query=Déli+Railway+Station+Budapest" target="_blank" class="inline-block bg-[#B27B6E] text-white font-bold py-2 px-4 rounded-full hover:bg-[#9F6A5D] transition duration-300">查看地圖</a>
                     </div>
                 </div>
             </div>
@@ -401,35 +474,35 @@
                             <ul class="space-y-2">
                                 <li class="flex items-center justify-between">
                                     <span class="text-gray-700"><strong>你好 (Hello):</strong> Szia (非正式) / Jó napot (正式)</span>
-                                    <button class="play-pronunciation-btn bg-[#D6C6AC] text-white text-sm font-medium py-1 px-3 rounded-full hover:bg-[#C1A57B] transition duration-300" data-phrase="Szia. Jó napot." data-lang="hu-HU">播放發音</button>
+                                    <button class="play-pronunciation-btn bg-[#8C998B] text-white text-sm font-medium py-1 px-3 rounded-full hover:bg-[#9F6A5D] transition duration-300" data-phrase="Szia. Jó napot." data-lang="hu-HU">播放發音</button>
                                 </li>
                                 <li class="flex items-center justify-between">
                                     <span class="text-gray-700"><strong>謝謝 (Thank you):</strong> Köszönöm</span>
-                                    <button class="play-pronunciation-btn bg-[#D6C6AC] text-white text-sm font-medium py-1 px-3 rounded-full hover:bg-[#C1A57B] transition duration-300" data-phrase="Köszönöm" data-lang="hu-HU">播放發音</button>
+                                    <button class="play-pronunciation-btn bg-[#8C998B] text-white text-sm font-medium py-1 px-3 rounded-full hover:bg-[#9F6A5D] transition duration-300" data-phrase="Köszönöm" data-lang="hu-HU">播放發音</button>
                                 </li>
                                 <li class="flex items-center justify-between">
                                     <span class="text-gray-700"><strong>請 (Please):</strong> Kérem</span>
-                                    <button class="play-pronunciation-btn bg-[#D6C6AC] text-white text-sm font-medium py-1 px-3 rounded-full hover:bg-[#C1A57B] transition duration-300" data-phrase="Kérem" data-lang="hu-HU">播放發音</button>
+                                    <button class="play-pronunciation-btn bg-[#8C998B] text-white text-sm font-medium py-1 px-3 rounded-full hover:bg-[#9F6A5D] transition duration-300" data-phrase="Kérem" data-lang="hu-HU">播放發音</button>
                                 </li>
                                 <li class="flex items-center justify-between">
                                     <span class="text-gray-700"><strong>對不起 (Sorry):</strong> Elnézést</span>
-                                    <button class="play-pronunciation-btn bg-[#D6C6AC] text-white text-sm font-medium py-1 px-3 rounded-full hover:bg-[#C1A57B] transition duration-300" data-phrase="Elnézést" data-lang="hu-HU">播放發音</button>
+                                    <button class="play-pronunciation-btn bg-[#8C998B] text-white text-sm font-medium py-1 px-3 rounded-full hover:bg-[#9F6A5D] transition duration-300" data-phrase="Elnézést" data-lang="hu-HU">播放發音</button>
                                 </li>
                                 <li class="flex items-center justify-between">
                                     <span class="text-gray-700"><strong>是 (Yes):</strong> Igen</span>
-                                    <button class="play-pronunciation-btn bg-[#D6C6AC] text-white text-sm font-medium py-1 px-3 rounded-full hover:bg-[#C1A57B] transition duration-300" data-phrase="Igen" data-lang="hu-HU">播放發音</button>
+                                    <button class="play-pronunciation-btn bg-[#8C998B] text-white text-sm font-medium py-1 px-3 rounded-full hover:bg-[#9F6A5D] transition duration-300" data-phrase="Igen" data-lang="hu-HU">播放發音</button>
                                 </li>
                                 <li class="flex items-center justify-between">
                                     <span class="text-gray-700"><strong>否 (No):</strong> Nem</span>
-                                    <button class="play-pronunciation-btn bg-[#D6C6AC] text-white text-sm font-medium py-1 px-3 rounded-full hover:bg-[#C1A57B] transition duration-300" data-phrase="Nem" data-lang="hu-HU">播放發音</button>
+                                    <button class="play-pronunciation-btn bg-[#8C998B] text-white text-sm font-medium py-1 px-3 rounded-full hover:bg-[#9F6A5D] transition duration-300" data-phrase="Nem" data-lang="hu-HU">播放發音</button>
                                 </li>
                                 <li class="flex items-center justify-between">
                                     <span class="text-gray-700"><strong>多少錢？ (How much?):</strong> Mennyibe kerül?</span>
-                                    <button class="play-pronunciation-btn bg-[#D6C6AC] text-white text-sm font-medium py-1 px-3 rounded-full hover:bg-[#C1A57B] transition duration-300" data-phrase="Mennyibe kerül?" data-lang="hu-HU">播放發音</button>
+                                    <button class="play-pronunciation-btn bg-[#8C998B] text-white text-sm font-medium py-1 px-3 rounded-full hover:bg-[#9F6A5D] transition duration-300" data-phrase="Mennyibe kerül?" data-lang="hu-HU">播放發音</button>
                                 </li>
                                 <li class="flex items-center justify-between">
                                     <span class="text-gray-700"><strong>再見 (Goodbye):</strong> Viszlát</span>
-                                    <button class="play-pronunciation-btn bg-[#D6C6AC] text-white text-sm font-medium py-1 px-3 rounded-full hover:bg-[#C1A57B] transition duration-300" data-phrase="Viszlát" data-lang="hu-HU">播放發音</button>
+                                    <button class="play-pronunciation-btn bg-[#8C998B] text-white text-sm font-medium py-1 px-3 rounded-full hover:bg-[#9F6A5D] transition duration-300" data-phrase="Viszlát" data-lang="hu-HU">播放發音</button>
                                 </li>
                             </ul>
                         </div>
@@ -462,8 +535,8 @@
                         </button>
                         <div class="accordion-content px-4 pb-4">
                             <p class="text-gray-600 mb-2">有任何關於匈牙利文化、習俗或旅行建議的問題嗎？請在這裡提問！</p>
-                            <textarea id="cultureQuestion" class="w-full p-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-[#C1A57B] mb-3 resize-y" rows="3" placeholder="例如：匈牙利人有哪些特別的用餐禮儀？"></textarea>
-                            <button id="askCultureQuestionBtn" class="w-full bg-[#C1A57B] text-white font-bold py-2 px-4 rounded-full hover:bg-[#A4895D] transition duration-300 flex items-center justify-center">
+                            <textarea id="cultureQuestion" class="w-full p-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-[#B27B6E] mb-3 resize-y" rows="3" placeholder="例如：匈牙利人有哪些特別的用餐禮儀？"></textarea>
+                            <button id="askCultureQuestionBtn" class="w-full bg-[#B27B6E] text-white font-bold py-2 px-4 rounded-full hover:bg-[#9F6A5D] transition duration-300 flex items-center justify-center">
                                 <span id="buttonText">詢問文化知識 ✨</span>
                                 <svg id="loadingSpinner" class="animate-spin -ml-1 mr-3 h-5 w-5 text-white hidden" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
                                     <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
@@ -480,32 +553,53 @@
             <div id="food" class="tab-content hidden">
                 <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                     <div class="bg-white rounded-lg shadow-md p-6">
-                        <h4 class="font-bold text-lg text-[#C1A57B] mb-2">匈牙利牛肉湯 (Gulyásleves)</h4>
+                        <h4 class="font-bold text-lg text-[#B27B6E] mb-2">匈牙利牛肉湯 (Gulyásleves)</h4>
                         <p class="text-gray-600">國菜代表！由牛肉、蔬菜和大量紅椒粉燉煮而成，濃郁暖心，通常作為主菜。推薦店家：Pest-Buda Bistro。</p>
                     </div>
                     <div class="bg-white rounded-lg shadow-md p-6">
-                        <h4 class="font-bold text-lg text-[#C1A57B] mb-2">蘭戈斯 (Lángos)</h4>
+                        <h4 class="font-bold text-lg text-[#B27B6E] mb-2">蘭戈斯 (Lángos)</h4>
                         <p class="text-gray-600">最受歡迎的街頭小吃。現炸的麵餅，外酥內軟，經典口味是抹上蒜蓉、酸奶油和滿滿的起司。</p>
                     </div>
                     <div class="bg-white rounded-lg shadow-md p-6">
-                        <h4 class="font-bold text-lg text-[#C1A57B] mb-2">煙囪捲 (Kürtőskalács)</h4>
+                        <h4 class="font-bold text-lg text-[#B27B6E] mb-2">煙囪捲 (Kürtőskalács)</h4>
                         <p class="text-gray-600">新鮮烘烤的螺旋狀甜麵包，外層裹著焦糖和核桃、肉桂等配料，香氣逼人，人手一支的散步甜點。</p>
                     </div>
                     <div class="bg-white rounded-lg shadow-md p-6">
-                        <h4 class="font-bold text-lg text-[#C1A57B] mb-2">紅椒雞 (Csirkepaprikás)</h4>
+                        <h4 class="font-bold text-lg text-[#B27B6E] mb-2">紅椒雞 (Csirkepaprikás)</h4>
                         <p class="text-gray-600">另一道經典匈牙利家常菜。雞肉在香甜的紅椒粉醬汁中燉煮，口感嫩滑，通常搭配一種名為 nokedli 的麵疙瘩。</p>
                     </div>
                     <div class="bg-white rounded-lg shadow-md p-6">
-                        <h4 class="font-bold text-lg text-[#C1A57B] mb-2">多博什蛋糕 (Dobos Torta)</h4>
+                        <h4 class="font-bold text-lg text-[#B27B6E] mb-2">多博什蛋糕 (Dobos Torta)</h4>
                         <p class="text-gray-600">精緻的匈牙利甜點。由多層海綿蛋糕和巧克力奶油堆疊而成，頂部覆蓋著一層脆脆的焦糖片。</p>
                     </div>
                     <div class="bg-white rounded-lg shadow-md p-6">
-                        <h4 class="font-bold text-lg text-[#C1A57B] mb-2">酸櫻桃冷湯 (Hideg Meggyleves)</h4>
+                        <h4 class="font-bold text-lg text-[#B27B6E] mb-2">酸櫻桃冷湯 (Hideg Meggyleves)</h4>
                         <p class="text-gray-600">一道獨特的夏季湯品。冰涼的酸櫻桃湯，甜中帶酸，清爽開胃，在炎熱的六月天品嚐再合適不過。</p>
                     </div>
                 </div>
             </div>
         </main>
+    </div>
+
+    <!-- Accommodation Details Modal -->
+    <div id="accommodationModal" class="modal">
+        <div class="modal-content">
+            <span class="close-button" id="closeModalBtn">&times;</span>
+            <h3 class="text-xl font-bold text-[#4A4A4A] mb-4">住宿詳情：Serenity Luxury Apartment</h3>
+            <div class="space-y-2 text-gray-700">
+                <p><strong>房源名稱:</strong> Serenity Luxury Apartment - directly at the Opera</p>
+                <p><strong>地址:</strong> <a href="https://www.google.com/maps/search/?api=1&query=Lázár+utca,+Budapest,+1065,+Hungary" target="_blank" class="text-[#B27B6E] hover:text-[#9F6A5D] font-medium transition duration-300">Lázár utca, 布達佩斯, 1065, 匈牙利</a></p>
+                <p><strong>房東:</strong> Krisztina</p>
+                <p><strong>房東搭檔:</strong> Anita</p>
+                <p><strong>入住:</strong> 6月25日 週三 下午3:00</p>
+                <p><strong>退房:</strong> 6月29日 週日 上午10:00</p>
+                <p><strong>入住方式:</strong> 密碼鑰匙盒 (請聯絡房東)</p>
+                <p><strong>同行旅伴:</strong> 2人和1名兒童</p>
+                <p><strong>確認碼:</strong> HM4Q3K49XM</p>
+                <!-- Removed Total cost from modal as requested -->
+                <p class="text-sm text-gray-500 mt-4">**房屋守則:** 最多4位房客, 禁止攜帶寵物</p>
+            </div>
+        </div>
     </div>
 
     <script>
@@ -517,6 +611,12 @@
             const accordions = document.querySelectorAll('.accordion-toggle');
             const pronunciationButtons = document.querySelectorAll('.play-pronunciation-btn');
 
+            // Accommodation Modal elements
+            const accommodationHeaderLink = document.getElementById('accommodationHeaderLink');
+            const accommodationDay1Link = document.getElementById('accommodationDay1Link');
+            const accommodationModal = document.getElementById('accommodationModal');
+            const closeModalBtn = document.getElementById('closeModalBtn');
+
             function showTab(tabId, buttons, contents) {
                 buttons.forEach(button => {
                     button.classList.remove('active');
@@ -527,7 +627,7 @@
 
                 const activeButton = document.querySelector(`[data-tab="${tabId}"]`) || document.querySelector(`[data-day="${tabId}"]`);
                 const activeContent = document.getElementById(tabId);
-                
+
                 if(activeButton) activeButton.classList.add('active');
                 if(activeContent) activeContent.classList.remove('hidden');
             }
@@ -548,7 +648,7 @@
                     showTab(dayId, dayTabs, dayContents);
                 });
             });
-            
+
             // Re-select accordions after DOM content is loaded, including new ones
             document.querySelectorAll('.accordion-toggle').forEach(accordion => {
                 accordion.addEventListener('click', () => {
@@ -570,7 +670,7 @@
                     button.addEventListener('click', () => {
                         const phrase = button.dataset.phrase;
                         const lang = button.dataset.lang || 'en-US'; // Default to English if no lang specified
-                        
+
                         const utterance = new SpeechSynthesisUtterance(phrase);
                         utterance.lang = lang; // Set language for pronunciation
 
@@ -608,59 +708,68 @@
             }
 
 
-            const ctx = document.getElementById('activityChart').getContext('2d');
-            const activityChart = new Chart(ctx, {
-                type: 'doughnut',
-                data: {
-                    labels: ['🏛️ 歷史文化', '🍽️ 美食市場', '✨ 特色景點', '🛶 休閒放鬆'],
-                    datasets: [{
-                        label: '活動佔比',
-                        data: [40, 20, 25, 15],
-                        backgroundColor: [
-                            '#C1A57B',
-                            '#D6C6AC',
-                            '#A4895D',
-                            '#EAE3D9'
-                        ],
-                        borderColor: '#FDFBF8',
-                        borderWidth: 4,
-                        hoverOffset: 8
-                    }]
-                },
-                options: {
-                    responsive: true,
-                    maintainAspectRatio: false,
-                    plugins: {
-                        legend: {
-                            position: 'bottom',
-                            labels: {
-                                font: {
-                                    family: "'Noto Sans TC', sans-serif",
-                                    size: 14
-                                },
-                                color: '#4A4A4A',
-                                boxWidth: 20,
-                                padding: 20
-                            }
+            // Chart.js Initialization
+            // Wrap in setTimeout to ensure DOM is fully ready after initial tab display
+            setTimeout(() => {
+                const ctx = document.getElementById('activityChart'); // Get the canvas element
+                if (ctx) { // Check if the element exists
+                    const activityChart = new Chart(ctx.getContext('2d'), {
+                        type: 'doughnut',
+                        data: {
+                            labels: ['🏛️ 歷史文化', '🍽️ 美食市場', '✨ 特色景點', '🛶 休閒放鬆'],
+                            datasets: [{
+                                label: '活動佔比',
+                                data: [40, 20, 25, 15],
+                                backgroundColor: [
+                                    '#B27B6E', /* Primary Accent */
+                                    '#8C998B', /* Secondary Accent */
+                                    '#D6C6AC', /* Existing Neutral */
+                                    '#F8F4EF'  /* Existing Neutral */
+                                ],
+                                borderColor: '#FDFBF8',
+                                borderWidth: 4,
+                                hoverOffset: 8
+                            }]
                         },
-                        tooltip: {
-                            callbacks: {
-                                label: function(context) {
-                                    let label = context.label || '';
-                                    if (label) {
-                                        label += ': ';
+                        options: {
+                            responsive: true,
+                            maintainAspectRatio: false,
+                            plugins: {
+                                legend: {
+                                    position: 'bottom',
+                                    labels: {
+                                        font: {
+                                            family: "'Noto Sans TC', sans-serif",
+                                            size: 14
+                                        },
+                                        color: '#4A4A4A',
+                                        boxWidth: 20,
+                                        padding: 20
                                     }
-                                    if (context.parsed !== null) {
-                                        label += context.parsed + '%';
+                                },
+                                tooltip: {
+                                    callbacks: {
+                                        label: function(context) {
+                                            let label = context.label || '';
+                                            if (label) {
+                                                label += ': ';
+                                            }
+                                            if (context.parsed !== null) {
+                                                label += context.parsed + '%';
+                                            }
+                                            return label;
+                                        }
                                     }
-                                    return label;
                                 }
-                            }
+                            },
+                            cutout: '60%'
                         }
-                    },
-                    cutout: '60%'
+                    });
+                } else {
+                    console.error('Canvas element with ID "activityChart" not found after setTimeout, Chart.js initialization skipped.');
                 }
-            });
+            }, 0); // Small delay to allow DOM to render after hidden class removal
+
 
             // Gemini API Integration for Local Culture Q&A
             const askCultureQuestionBtn = document.getElementById('askCultureQuestionBtn');
@@ -715,6 +824,34 @@
                 } finally {
                     buttonText.textContent = '詢問文化知識 ✨';
                     loadingSpinner.classList.add('hidden');
+                }
+            });
+
+            // Modal Logic
+            function showModal() {
+                accommodationModal.classList.add('show');
+            }
+
+            function hideModal() {
+                accommodationModal.classList.remove('show');
+            }
+
+            accommodationHeaderLink.addEventListener('click', function(event) {
+                event.preventDefault(); // Prevent default link behavior
+                showModal();
+            });
+
+            accommodationDay1Link.addEventListener('click', function(event) {
+                event.preventDefault(); // Prevent default link behavior
+                showModal();
+            });
+
+            closeModalBtn.addEventListener('click', hideModal);
+
+            // Close modal when clicking outside of content
+            accommodationModal.addEventListener('click', function(event) {
+                if (event.target === accommodationModal) {
+                    hideModal();
                 }
             });
         });
